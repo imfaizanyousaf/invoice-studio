@@ -44,18 +44,22 @@ const Navbar = () => {
       className={`container flex justify-between items-center transition-all duration-300 p-4 w-full mx-auto z-10 bg-transparent border-none rounded-none shadow-none`}
     >
       <div className="space-x-4">
+        {pathname == "/" && 
           <ActivityBar trigger={
               <Button variant="outline" className="rounded-full w-10 h-10" size="icon">
                 <SidebarIcon />
               </Button>}>
             <ActivityBarContent />
           </ActivityBar>
-        <Link
-          href={"/"}
-          className="text-foreground hover:text-primary transition-colors"
-        >
-          Home
-        </Link>
+        }
+        {pathname !== "/" && (
+          <Link
+            href={"/"}
+            className="text-foreground hover:text-primary transition-colors"
+          >
+            Home
+          </Link>
+        )}
       </div>
       <div className="flex items-center gap-4">
         {user && (

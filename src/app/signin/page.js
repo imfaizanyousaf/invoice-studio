@@ -84,7 +84,7 @@ const SignIn = () => {
           />
         )}
 
-        <div
+        {/* <div
           onClick={handleGoogleLogin}
           disabled={loading}
           className="flex items-center text-normal cursor-pointer hover:bg-muted transition-all border-2 border-border rounded-xl p-2 gap-2 disabled:cursor-not-allowed disabled:bg-muted"
@@ -99,9 +99,10 @@ const SignIn = () => {
             Or continue with
           </p>
           <div className="flex-1 h-[1px] bg-border"></div>
-        </div>
+        </div> */}
 
         <div className="flex flex-col items-center justify-center gap-6 w-full">
+          <h2 className="text-3xl font-medium">Sign In</h2>
           <div className="w-full flex items-center gap-3 border-2 border-border rounded-xl p-3 bg-transparent">
             <EnvelopeIcon className="w-5 h-5 text-muted-foreground" />
             <input
