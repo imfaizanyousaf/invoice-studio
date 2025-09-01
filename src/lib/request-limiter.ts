@@ -3,8 +3,8 @@
 import axios from "axios";
 
 const REQUEST_LIMIT_KEY = 'invoiceProcessingRequests';
-const MAX_REQUESTS_FOR_GUEST = Number(process.env.MAX_REQUESTS_FOR_GUEST) || 0;
-const MAX_REQUESTS_FOR_REGISTERED = Number(process.env.MAX_REQUESTS_FOR_REGISTERED) || 8;
+const MAX_REQUESTS_FOR_GUEST = Number(process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_GUEST) || 1;
+const MAX_REQUESTS_FOR_REGISTERED = Number(process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_REGISTERED) || 8;
 
 export const canProcessRequest = async (user: any): Promise<boolean> => {
   console.log('user', user);

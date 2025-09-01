@@ -24,6 +24,7 @@ import * as requestLimiter from '@/lib/request-limiter';
 import { useSession } from 'next-auth/react';
 import { useLocalStorageInvoices } from '@/hooks/use-local-storage-invoices';
 import { useActivityLogStorage } from '@/hooks/use-activity-log-storage';
+import { useRouter } from "next/navigation";
 
 export type InvoiceType = 'purchase' | 'sales';
 
@@ -187,6 +188,8 @@ function PageContent() {
 
   const { open, isMobile, openMobile } = useSidebar();
   const isSidebarActuallyOpen = isMobile ? openMobile : open;
+
+    const router = useRouter();
 
   const {
     loadStoredInvoices,
@@ -373,12 +376,13 @@ function PageContent() {
 
     if (!await requestLimiter.canProcessRequest(user)) {
       if (!user) {
-        toast({
-          title: "Request Limit Reached",
-          description: `You've used your ${process.env.MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.MAX_REQUESTS_FOR_REGISTERED} more requests.`,
-          variant: "destructive",
-        });
-        setRequestError(`You've used your ${process.env.MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.MAX_REQUESTS_FOR_REGISTERED} more requests.`);
+        // toast({
+        //   title: "Request Limit Reached",
+        //   description: `You've used your ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_REGISTERED} more requests.`,
+        //   variant: "destructive",
+        // });
+        setRequestError(`You've used your ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_REGISTERED} more requests.`);
+        router.push("/signin");
         return;
       } else {
         toast({

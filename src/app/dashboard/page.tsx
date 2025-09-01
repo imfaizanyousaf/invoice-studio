@@ -200,15 +200,18 @@ function PageContent() {
   // Fetch user's existing invoices when user is present
   useEffect(() => {
     const loadUserInvoices = async () => {
-      // Get user ID from multiple possible sources
-      let userId = null;
+      const getUserId = () => {
+        if (user?.userId || user?._id) {
+          return user.userId || user._id;
+        }
+        if (session?.user) {
+          const sessionUser = session.user as any;
+          return sessionUser?.id || sessionUser?._id;
+        }
+        return null;
+      };
       
-      if (user?.userId || user?._id) {
-        userId = user.userId || user._id;
-      } else if (session?.user && ((session.user as any)?.id || (session.user as any)?._id)) {
-        userId = (session.user as any).id || (session.user as any)._id;
-      }
-      
+      const userId = getUserId();
       console.log("Dashboard - Loading invoices for userId:", userId);
       
       if (userId) {
@@ -217,7 +220,13 @@ function PageContent() {
           setInvoices(prevInvoices => {
             // Filter out any existing database invoices to avoid duplicates
             const nonDbInvoices = prevInvoices.filter(inv => !inv.id.startsWith('db_'));
-            return [...userInvoices, ...nonDbInvoices];
+            
+            // Also check for duplicate IDs within the new userInvoices array itself
+            const uniqueUserInvoices = userInvoices.filter((invoice, index, self) => 
+              index === self.findIndex(inv => inv.id === invoice.id)
+            );
+            
+            return [...uniqueUserInvoices, ...nonDbInvoices];
           });
           toast({
             title: "Invoices Loaded",
@@ -227,8 +236,15 @@ function PageContent() {
       }
     };
 
-    loadUserInvoices();
-  }, [user?.userId, user?._id, session?.user?.id, session?.user?._id, toast]);
+    // Add a loading state to prevent multiple rapid calls
+    let isLoading = false;
+    if (!isLoading) {
+      isLoading = true;
+      loadUserInvoices().finally(() => {
+        isLoading = false;
+      });
+    }
+  }, [user?.userId, user?._id, session?.user, toast]);
 
 
   const logActivity = useCallback((label: string, excelFileDataUri?: string) => {
@@ -319,17 +335,17 @@ function PageContent() {
       let userId = null;
       if (user?.userId || user?._id) {
         userId = user.userId || user._id;
-      } else if (session?.user && ((session.user as any)?.id || (session.user as any)?._id)) {
-        userId = (session.user as any).id || (session.user as any)._id;
+      } else if (session?.user && ((session?.user as any)?.id || (session?.user as any)?._id)) {
+        userId = (session?.user as any).id || (session?.user as any)._id;
       }
       
       if (!await requestLimiter.canProcessRequest(userId ? { userId, _id: userId } : null)) {
         toast({
           title: "Request Limit Reached",
-          description: `You've used your ${process.env.MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.MAX_REQUESTS_FOR_REGISTERED} more requests.`,
+          description: `You've used your ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_REGISTERED} more requests.`,
           variant: "destructive",
         });
-        setRequestError(`You've used your ${process.env.MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.MAX_REQUESTS_FOR_REGISTERED} more requests.`);
+        setRequestError(`You've used your ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_REGISTERED} more requests.`);
         return;
       }
     
@@ -419,7 +435,7 @@ function PageContent() {
               existingSignatures.add(signature);
 
 
-              console.log("Dashboard - User context: before invoice record", user, session.user);
+              console.log("Dashboard - User context: before invoice record", user, session?.user);
               
               
               
@@ -512,7 +528,7 @@ function PageContent() {
       if (user?.userId || user?._id) {
         userId = user.userId || user._id;
       } else if (session?.user?.id || session?.user?._id) {
-        userId = session.user.id || session.user._id;
+        userId = session?.user.id || session?.user._id;
       }
       
       if (userId) {
@@ -565,7 +581,11 @@ function PageContent() {
     }
     // Merge with existing database invoices
     const existingDbInvoices = invoices.filter(inv => inv.id.startsWith('db_'));
-    setInvoices([...existingDbInvoices, ...tempInvoicesAccumulator]); // Final update after all processing and logging
+    const finalInvoices = [...existingDbInvoices, ...tempInvoicesAccumulator];
+    const uniqueFinalInvoices = finalInvoices.filter((invoice, index, self) => 
+      index === self.findIndex(inv => inv.id === invoice.id)
+    );
+    setInvoices(uniqueFinalInvoices);
   }, [invoices, toast, isProcessing, logActivity, invoiceType, user, updatePackageRequests]);
 
 
@@ -578,66 +598,71 @@ function PageContent() {
   };
 
   const completedInvoices = useMemo(() => {
-    const filtered = invoices.filter(
-      (inv) => inv.status === 'completed' && inv.extractedData
-    );
+  const filtered = invoices.filter(
+    (inv) => inv.status === 'completed' && inv.extractedData
+  );
 
-    if (sortConfig.column) {
-      const sorted = [...filtered].sort((a, b) => {
-        if (a.processingOrderIndex === undefined || b.processingOrderIndex === undefined || !a.extractedData || !b.extractedData) return 0;
+  // Remove duplicates based on ID before sorting
+  const uniqueFiltered = filtered.filter((invoice, index, self) => 
+    index === self.findIndex(inv => inv.id === invoice.id)
+  );
 
-        let valA: any;
-        let valB: any;
+  if (sortConfig.column) {
+    const sorted = [...uniqueFiltered].sort((a, b) => {
+      if (a.processingOrderIndex === undefined || b.processingOrderIndex === undefined || !a.extractedData || !b.extractedData) return 0;
 
-        switch (sortConfig.column) {
-          case 'processingOrder':
-            valA = a.processingOrderIndex;
-            valB = b.processingOrderIndex;
-            break;
-          case 'invoice_date':
-            valA = parseDate(a.extractedData.invoice_date);
-            valB = parseDate(b.extractedData.invoice_date);
-            if (valA === null && valB === null) return 0;
-            if (valA === null) return sortConfig.direction === 'ascending' ? 1 : -1;
-            if (valB === null) return sortConfig.direction === 'ascending' ? -1 : 1;
-            return (sortConfig.direction === 'ascending' ? 1 : -1) * (valA.getTime() - valB.getTime());
-          case 'invoice_number':
-          case 'trn_number':
-          case 'vendor_name':
-            valA = (a.extractedData as any)[sortConfig.column!]?.toString().toLowerCase() || '';
-            valB = (b.extractedData as any)[sortConfig.column!]?.toString().toLowerCase() || '';
-            break;
-          case 'total_before_tax':
-          case 'vat_amount':
-          case 'total_amount':
-            valA = parseFloat(((a.extractedData as any)[sortConfig.column!] || '0').replace(/[^0-9.-]+/g, "")) || 0;
-            valB = parseFloat(((b.extractedData as any)[sortConfig.column!] || '0').replace(/[^0-9.-]+/g, "")) || 0;
-            break;
-          default:
-            return 0;
-        }
+      let valA: any;
+      let valB: any;
 
-        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
-        return 0;
-      });
-      return sorted;
-    }
+      switch (sortConfig.column) {
+        case 'processingOrder':
+          valA = a.processingOrderIndex;
+          valB = b.processingOrderIndex;
+          break;
+        case 'invoice_date':
+          valA = parseDate(a.extractedData.invoice_date);
+          valB = parseDate(b.extractedData.invoice_date);
+          if (valA === null && valB === null) return 0;
+          if (valA === null) return sortConfig.direction === 'ascending' ? 1 : -1;
+          if (valB === null) return sortConfig.direction === 'ascending' ? -1 : 1;
+          return (sortConfig.direction === 'ascending' ? 1 : -1) * (valA.getTime() - valB.getTime());
+        case 'invoice_number':
+        case 'trn_number':
+        case 'vendor_name':
+          valA = (a.extractedData as any)[sortConfig.column!]?.toString().toLowerCase() || '';
+          valB = (b.extractedData as any)[sortConfig.column!]?.toString().toLowerCase() || '';
+          break;
+        case 'total_before_tax':
+        case 'vat_amount':
+        case 'total_amount':
+          valA = parseFloat(((a.extractedData as any)[sortConfig.column!] || '0').replace(/[^0-9.-]+/g, "")) || 0;
+          valB = parseFloat(((b.extractedData as any)[sortConfig.column!] || '0').replace(/[^0-9.-]+/g, "")) || 0;
+          break;
+        default:
+          return 0;
+      }
 
-    // Default sort by processingOrderIndex ascending, with database invoices first
-    return [...filtered].sort((a, b) => {
-      // Database invoices come first
-      const aIsDb = a.id.startsWith('db_');
-      const bIsDb = b.id.startsWith('db_');
-      
-      if (aIsDb && !bIsDb) return -1;
-      if (!aIsDb && bIsDb) return 1;
-      
-      // Then sort by processingOrderIndex
-      if (a.processingOrderIndex === undefined || b.processingOrderIndex === undefined) return 0;
-      return (a.processingOrderIndex ?? 0) - (b.processingOrderIndex ?? 0);
+      if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+      return 0;
     });
-  }, [invoices, sortConfig]);
+    return sorted;
+  }
+
+  // Default sort by processingOrderIndex ascending, with database invoices first
+  return [...uniqueFiltered].sort((a, b) => {
+    // Database invoices come first
+    const aIsDb = a.id.startsWith('db_');
+    const bIsDb = b.id.startsWith('db_');
+    
+    if (aIsDb && !bIsDb) return -1;
+    if (!aIsDb && bIsDb) return 1;
+    
+    // Then sort by processingOrderIndex
+    if (a.processingOrderIndex === undefined || b.processingOrderIndex === undefined) return 0;
+    return (a.processingOrderIndex ?? 0) - (b.processingOrderIndex ?? 0);
+  });
+}, [invoices, sortConfig]);
 
 
   const handleExport = () => {
