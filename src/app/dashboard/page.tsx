@@ -326,10 +326,10 @@ function PageContent() {
       if (!await requestLimiter.canProcessRequest(userId ? { userId, _id: userId } : null)) {
         toast({
           title: "Request Limit Reached",
-          description: "You've used your 3 free requests. Please register to get 5 more requests.",
+          description: `You've used your ${process.env.MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.MAX_REQUESTS_FOR_REGISTERED} more requests.`,
           variant: "destructive",
         });
-        setRequestError("You've used your 3 free requests. Please register to get 5 more requests.");
+        setRequestError(`You've used your ${process.env.MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.MAX_REQUESTS_FOR_REGISTERED} more requests.`);
         return;
       }
     

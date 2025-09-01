@@ -375,10 +375,10 @@ function PageContent() {
       if (!user) {
         toast({
           title: "Request Limit Reached",
-          description: "You've used your 5 free requests. Please register to get 10 more requests.",
+          description: `You've used your ${process.env.MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.MAX_REQUESTS_FOR_REGISTERED} more requests.`,
           variant: "destructive",
         });
-        setRequestError("You've used your 5 free requests. Please register to get 10 more requests.");
+        setRequestError(`You've used your ${process.env.MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.MAX_REQUESTS_FOR_REGISTERED} more requests.`);
         return;
       } else {
         toast({
