@@ -1,0 +1,129 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 98%; /* Lighter, slightly cool white */
+    --foreground: 220 25% 25%; /* Dark, desaturated blue-gray */
+    
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 220 25% 25%; /* Dark, desaturated blue-gray */
+    
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 220 25% 25%; /* Dark, desaturated blue-gray */
+    
+    --primary: 225 80% 55%; /* Vibrant, slightly softer blue */
+    --primary-foreground: 0 0% 100%; /* White */
+    
+    --secondary: 220 30% 94%; /* Light cool gray */
+    --secondary-foreground: 225 70% 35%; /* Darker, softer blue */
+    
+    --muted: 220 30% 96%; /* Very light gray, for subtle backgrounds */
+    --muted-foreground: 220 20% 50%; /* Muted slate gray */
+    
+    --accent: 30 90% 60%; /* Slightly richer, vibrant orange */
+    --accent-foreground: 210 40% 98%; /* Very light cool gray for contrast on accent */
+    
+    --destructive: 0 70% 55%; /* Slightly softer red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    
+    --border: 220 20% 90%; /* Softer gray border */
+    --input: 220 30% 97%; /* Very light gray for input backgrounds */
+    --ring: 225 80% 60%; /* Vibrant blue for focus rings, matching primary */
+    
+    --radius: 0.8rem; /* Slightly larger radius for softer corners */
+
+    /* Chart colors - can be adjusted for modern themes */
+    --chart-1: hsl(225, 70%, 60%); /* Primary-like blue */
+    --chart-2: hsl(160, 60%, 45%); /* Teal/Green */
+    --chart-3: hsl(30, 85%, 60%);  /* Accent-like orange */
+    --chart-4: hsl(280, 60%, 65%); /* Purple */
+    --chart-5: hsl(45, 75%, 55%);  /* Yellow/Gold */
+
+    /* Sidebar specific variables - Light Theme */
+    --sidebar-background: 220 25% 97%; 
+    --sidebar-foreground: 220 25% 30%; 
+    --sidebar-border: 220 20% 88%; 
+    --sidebar-accent: 220 30% 92%; 
+    --sidebar-accent-foreground: 225 75% 40%;
+    --sidebar-primary: var(--primary); 
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-ring: var(--ring);
+  }
+
+  .dark {
+    --background: 220 15% 12%; /* Very dark desaturated blue */
+    --foreground: 220 20% 88%; /* Light cool gray */
+
+    --card: 220 15% 16%; /* Darker gray for cards */
+    --card-foreground: 220 20% 88%; /* Light cool gray */
+
+    --popover: 220 15% 15%; /* Dark gray for popovers */
+    --popover-foreground: 220 20% 88%; /* Light cool gray */
+
+    --primary: 225 75% 65%; /* Lighter, vibrant blue for dark mode */
+    --primary-foreground: 220 10% 15%; /* Very dark for contrast on primary */
+
+    --secondary: 220 15% 28%; /* Medium-dark gray */
+    --secondary-foreground: 220 20% 80%; /* Light gray */
+
+    --muted: 220 15% 22%; /* Dark muted gray */
+    --muted-foreground: 220 20% 65%; /* Muted light gray */
+
+    --accent: 30 85% 65%; /* Lighter, vibrant orange for dark mode */
+    --accent-foreground: 220 10% 15%; /* Very dark for contrast on accent */
+
+    --destructive: 0 65% 60%; /* Lighter red for dark mode */
+    --destructive-foreground: 0 0% 100%; /* White */
+
+    --border: 220 15% 25%; /* Dark gray border */
+    --input: 220 15% 20%; /* Dark muted gray for input backgrounds */
+    --ring: 225 75% 70%; /* Lighter vibrant blue for focus rings */
+    
+    /* Chart colors - Dark Theme */
+    --chart-1: hsl(225, 65%, 65%);
+    --chart-2: hsl(160, 55%, 55%);
+    --chart-3: hsl(30, 80%, 65%);
+    --chart-4: hsl(280, 55%, 70%);
+    --chart-5: hsl(45, 70%, 60%);
+
+    /* Sidebar specific variables - Dark Theme */
+    --sidebar-background: 220 15% 14%; 
+    --sidebar-foreground: 220 20% 85%; 
+    --sidebar-border: 220 15% 22%;
+    --sidebar-accent: 220 15% 25%; 
+    --sidebar-accent-foreground: 220 20% 90%;
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-ring: var(--ring);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* font-family: Arial, Helvetica, sans-serif; removed to use Geist */
+  }
+  /* Add smooth scrolling */
+  html {
+    @apply scroll-smooth;
+  }
+
+  /* Improve focus visibility for accessibility */
+  *:focus-visible {
+    @apply outline-none ;
+  }
+}
+
+@layer base {
+  input,
+  input:focus,
+  input:focus-visible {
+    @apply border-none outline-none ring-0 ring-offset-0 shadow-none;
+  }
+}
