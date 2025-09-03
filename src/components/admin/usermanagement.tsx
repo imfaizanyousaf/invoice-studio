@@ -19,13 +19,24 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Search, MoreVertical, Eye, Pencil, Trash2 } from "lucide-react";
+import { Search, MoreVertical, Eye, Pencil, Trash2, Package } from "lucide-react";
 import { toast } from "react-toastify";
 
 // 👉 NEW: Create modal moved to its own file
 import CreateUserDialog from "@/components/admin/CreateUserDialog";
 
 /* ------------------------------ Types (API) ------------------------------ */
+type UserPackage = {
+  _id: string;
+  UserId: string;
+  name: string;
+  requests: number;
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+};
+
 type BackendUser = {
   _id: string;
   name: string;
@@ -35,6 +46,7 @@ type BackendUser = {
   image?: string | null;
   provider?: string | null; // "email" | "google"
   createdAt: string;        // ISO
+  package?: UserPackage | null; // Package details now included in API response
 };
 
 type UsersPage = {
@@ -63,6 +75,7 @@ const roleBadgeClass = (role?: string | null) => {
     default:        return badge("bg-muted","text-muted-foreground","border-border");
   }
 };
+
 const statusBadgeClass = (status?: string | null) => {
   const s = (status || "active").toLowerCase();
   switch (s) {
@@ -72,6 +85,19 @@ const statusBadgeClass = (status?: string | null) => {
     default:          return badge("bg-muted","text-muted-foreground","border-border");
   }
 };
+
+const packageBadgeClass = (packageName?: string | null) => {
+  const name = (packageName || "none").toLowerCase();
+  switch (name) {
+    case "free":      return badge("bg-gray-500/15","text-gray-400","border-gray-500/30");
+    case "basic":     return badge("bg-blue-500/15","text-blue-400","border-blue-500/30");
+    case "premium":   return badge("bg-purple-500/15","text-purple-400","border-purple-500/30");
+    case "pro":       return badge("bg-orange-500/15","text-orange-400","border-orange-500/30");
+    case "enterprise": return badge("bg-yellow-500/15","text-yellow-400","border-yellow-500/30");
+    default:          return badge("bg-muted","text-muted-foreground","border-border");
+  }
+};
+
 const titleCase = (v?: string | null) => (!v ? "—" : v.charAt(0).toUpperCase() + v.slice(1));
 
 /* ------------------------------ View Dialog ------------------------------ */
@@ -83,10 +109,10 @@ function ViewUserDialog({ user }: { user: BackendUser }) {
           <Eye className="mr-2 h-4 w-4" /> View
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>User Details</DialogTitle>
-          <DialogDescription>Read-only view of the selected user.</DialogDescription>
+          <DialogDescription>Read-only view of the selected user and their package.</DialogDescription>
         </DialogHeader>
 
         <div className="mt-2 grid gap-6">
@@ -106,6 +132,24 @@ function ViewUserDialog({ user }: { user: BackendUser }) {
             <div><div className="text-xs text-muted-foreground">Status</div><Badge className={`mt-1 ${statusBadgeClass(user.status)}`}>{titleCase(user.status)}</Badge></div>
             <div><div className="text-xs text-muted-foreground">User ID</div><div className="mt-1 font-medium">{user._id}</div></div>
             <div><div className="text-xs text-muted-foreground">Created</div><div className="mt-1 font-medium">{new Date(user.createdAt).toLocaleDateString()}</div></div>
+          </div>
+
+          {/* Package Details Section */}
+          <div className="border-t pt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-sm font-semibold">Package Details</h4>
+            </div>
+            {user.package ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div><div className="text-xs text-muted-foreground">Package Name</div><Badge className={`mt-1 ${packageBadgeClass(user.package.name)}`}>{user.package.name}</Badge></div>
+                <div><div className="text-xs text-muted-foreground">Requests</div><div className="mt-1 font-medium">{user.package.requests.toLocaleString()}</div></div>
+                <div><div className="text-xs text-muted-foreground">Price</div><div className="mt-1 font-medium">${user.package.price}</div></div>
+                <div><div className="text-xs text-muted-foreground">Package Created</div><div className="mt-1 font-medium">{new Date(user.package.createdAt).toLocaleDateString()}</div></div>
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">No package assigned</div>
+            )}
           </div>
         </div>
       </DialogContent>
@@ -261,8 +305,8 @@ function ActionsMenu({ user, onEdit, onDelete }: { user: BackendUser; onEdit: (u
   );
 }
 
-/* ------------------------------ Main (GET API wired) ------------------------------ */
-type SortKey = "_id" | "name" | "email" | "role" | "status" | "createdAt";
+/* ------------------------------ Main Component ------------------------------ */
+type SortKey = "_id" | "name" | "email" | "role" | "status" | "createdAt" | "package";
 type SortDir = "asc" | "desc";
 
 export default function UserManagement() {
@@ -288,10 +332,13 @@ export default function UserManagement() {
       try {
         setLoading(true);
         setErr(null);
+        
+        // Fetch users with package details included
         const res = await fetch(`/api/auth/users-all?page=${page}&limit=${limit}`, { cache: "no-store" });
         if (!res.ok) throw new Error(`Failed to load users (${res.status})`);
         const json = await res.json();
         if (!json?.success) throw new Error("API returned success=false");
+        
         if (!mounted) return;
         const data: UsersPage = json.data;
         setRows(data.users);
@@ -310,12 +357,20 @@ export default function UserManagement() {
     const q = query.toLowerCase().trim();
     const base = q
       ? rows.filter((u) =>
-          [u.name, u.email, u.role || "", u.status || ""].join(" ").toLowerCase().includes(q)
+          [u.name, u.email, u.role || "", u.status || "", u.package?.name || ""].join(" ").toLowerCase().includes(q)
         )
       : rows;
     const sorted = [...base].sort((a, b) => {
-      const A = String(a[sortBy] ?? "").toLowerCase();
-      const B = String(b[sortBy] ?? "").toLowerCase();
+      let A: string, B: string;
+      
+      if (sortBy === "package") {
+        A = (a.package?.name || "").toLowerCase();
+        B = (b.package?.name || "").toLowerCase();
+      } else {
+        A = String(a[sortBy] ?? "").toLowerCase();
+        B = String(b[sortBy] ?? "").toLowerCase();
+      }
+      
       if (A < B) return sortDir === "asc" ? -1 : 1;
       if (A > B) return sortDir === "asc" ? 1 : -1;
       return 0;
@@ -426,7 +481,7 @@ export default function UserManagement() {
           <div className="relative w-full">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search users by name, email, role..."
+              placeholder="Search users by name, email, role, package..."
               className="pl-8"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -454,7 +509,7 @@ export default function UserManagement() {
       {/* Table Container with Horizontal Scrolling */}
       <div className="rounded-md border overflow-hidden">
         <ScrollArea className="w-full overflow-auto">
-          <div className="min-w-[800px]">
+          <div className="min-w-[1000px]">
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
                 <TableRow>
@@ -463,6 +518,7 @@ export default function UserManagement() {
                   <TableHead onClick={() => toggleSort("email")} className="cursor-pointer select-none">Email {SortIcon("email")}</TableHead>
                   <TableHead onClick={() => toggleSort("role")} className="cursor-pointer select-none">Role {SortIcon("role")}</TableHead>
                   <TableHead onClick={() => toggleSort("status")} className="cursor-pointer select-none">Status {SortIcon("status")}</TableHead>
+                  <TableHead onClick={() => toggleSort("package")} className="cursor-pointer select-none">Package {SortIcon("package")}</TableHead>
                   <TableHead onClick={() => toggleSort("createdAt")} className="cursor-pointer select-none">Created {SortIcon("createdAt")}</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -471,15 +527,15 @@ export default function UserManagement() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">Loading…</TableCell>
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">Loading…</TableCell>
                   </TableRow>
                 ) : err ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-red-500">Error: {err}</TableCell>
+                    <TableCell colSpan={8} className="h-24 text-center text-red-500">Error: {err}</TableCell>
                   </TableRow>
                 ) : tableRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">No users found.</TableCell>
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">No users found.</TableCell>
                   </TableRow>
                 ) : (
                   tableRows.map((u) => (
@@ -494,6 +550,18 @@ export default function UserManagement() {
                       <TableCell className="text-muted-foreground">{u.email}</TableCell>
                       <TableCell><Badge className={roleBadgeClass(u.role)}>{titleCase(u.role)}</Badge></TableCell>
                       <TableCell><Badge className={statusBadgeClass(u.status)}>{titleCase(u.status)}</Badge></TableCell>
+                      <TableCell>
+                        {u.package ? (
+                          <div className="flex flex-col gap-1 w-fit text-center">
+                            <Badge className={`${packageBadgeClass(u.package.name)} w-fit`}>{u.package.name}</Badge>
+                            <div className="text-xs text-muted-foreground">
+                              {u.package.requests.toLocaleString()} requests • ${u.package.price}
+                            </div>
+                          </div>
+                        ) : (
+                          <Badge className={packageBadgeClass(null)}>No Package</Badge>
+                        )}
+                      </TableCell>
                       <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
                         <ActionsMenu user={u} onEdit={handleUserUpdate} onDelete={handleDeleteUser} />
