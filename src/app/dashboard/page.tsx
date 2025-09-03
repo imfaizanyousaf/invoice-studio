@@ -246,6 +246,23 @@ function PageContent() {
     }
   }, [user?.userId, user?._id, session?.user, toast]);
 
+  const logUserActivity = async (activityEntry) => {
+  try {
+    const response = await fetch('/api/activity/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: user?._id, // Get from your auth system
+        activityEntry
+      })
+    });
+    const result = await response.json();
+    console.log('Activity logged:', result);
+  } catch (error) {
+    console.error('Error logging activity:', error);
+  }
+};
+
 
   const logActivity = useCallback((label: string, excelFileDataUri?: string) => {
     const newEntry: ActivityEntry = {
@@ -255,7 +272,7 @@ function PageContent() {
       excelFileDataUri,
     };
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-
+    logUserActivity(newEntry);
     setActivityLog(prevLog => {
       const todayGroupIndex = prevLog.findIndex(group => group.date === today);
       if (todayGroupIndex > -1) {
