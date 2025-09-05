@@ -246,7 +246,7 @@ function PageContent() {
     }
   }, [user?.userId, user?._id, session?.user, toast]);
 
-  const logUserActivity = async (activityEntry) => {
+  const logUserActivity = async (activityEntry: ActivityEntry) => {
   try {
     const response = await fetch('/api/activity/create', {
       method: 'POST',
