@@ -4,20 +4,12 @@ import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { LogOut, User, Settings, CreditCard, SidebarIcon } from "lucide-react";
+import { SidebarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActivityBar } from "./ActivityBar";
 import {ActivityBarContent} from "./ActivityBarContent";
+import {UserMenu} from "@/components/dashboard/UserMenu";
 
 const Navbar = () => {
   const { user, logout } = useUser();
@@ -75,36 +67,7 @@ const Navbar = () => {
         <ThemeToggle />
 
         {/* User Dropdown Menu */}
-        {user && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-muted/50 transition-colors">
-                <UserCircleIcon className="w-8 h-8 text-muted-foreground hover:text-foreground" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {user?.name || "User"}
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email || "user@example.com"}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="text-red-600 focus:text-red-600"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        {user && <UserMenu />}
 
         {!user && (
           <>

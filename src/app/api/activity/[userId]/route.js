@@ -1,44 +1,33 @@
-import { ActivityService } from "@/services/activityService";
-import connectDB from '@/lib/mongodb';
+import connectDB from "@/lib/mongodb";
+import Activity from "@/lib/models/Activity";
+import { NextResponse } from "next/server";
 
-export default async function handler(req, res) {
-    if (req.method !== 'GET') {
-        return res.status(405).json({ message: 'Method not allowed' });
+export async function GET(request, { params }) {
+  try {
+    await connectDB();
+
+    const { userId } = params;
+    const { searchParams } = new URL(request.url);
+
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "userId is required" },
+        { status: 400 }
+      );
     }
 
-    try {
-        await connectDB();
+    const activities = await Activity.find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(limit);
 
-        const { userId, limit, startDate, endDate } = req.query;
-
-        if (!userId) {
-            return res.status(400).json({ message: 'userId is required' });
-        }
-
-        let activities;
-
-        if (startDate && endDate) {
-            // Get activities for date range
-            activities = await ActivityService.getUserActivitiesByDateRange(
-                userId,
-                startDate,
-                endDate
-            );
-        } else {
-            // Get recent activities
-            const limitNum = limit ? parseInt(limit) : 30;
-            activities = await ActivityService.getUserActivities(userId, limitNum);
-        }
-
-        res.status(200).json({
-            success: true,
-            data: activities
-        });
-    } catch (error) {
-        console.error('Error in get activities API:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-        });
-    }
+    return NextResponse.json(activities, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching activities:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch activities" },
+      { status: 500 }
+    );
+  }
 }

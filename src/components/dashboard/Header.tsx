@@ -13,6 +13,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, LayoutDashboard } from "lucide-react";
+import UserMenu from "./UserMenu";
 // import { ADMIN_EMAILS } from "@/lib/constants";
 
 const Header = () => {
@@ -66,48 +67,7 @@ const Header = () => {
 
         <ThemeToggle />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-muted/50 transition-colors">
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt="User Avatar"
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              ) : (
-                <UserCircleIcon className="w-12 h-12 text-muted-foreground" />
-              )}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            {/* User info (label OK here) */}
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user?.name || "User"}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {user?.email || "user@example.com"}
-                </p>
-              </div>
-            </DropdownMenuLabel>
-
-            <DropdownMenuSeparator />
-
-            
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem
-              onClick={handleLogout}
-              className="text-red-600 focus:text-red-600 cursor-pointer"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {user && <UserMenu />}
       </div>
     </div>
   );
