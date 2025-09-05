@@ -171,13 +171,13 @@ const SignUp = () => {
 
           {/* Social Login Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
-            <div
+            {/* <div
               onClick={handleSignupWithGoogle}
               className="flex items-center text-normal cursor-pointer hover:bg-muted transition-all border-2 border-border rounded-xl p-2 gap-2"
             >
               <FontAwesomeIcon icon={faGoogle} className="w-5 h-5 text-muted-foreground" />
               <p className="text-foreground">Continue with Google</p>
-            </div>
+            </div> */}
 
             {/* <div
               onClick={handleAppleLogin}

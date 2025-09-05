@@ -246,46 +246,47 @@ function PageContent() {
     }
   }, [user?.userId, user?._id, session?.user, toast]);
 
-  const logUserActivity = async (activityEntry: ActivityEntry) => {
+  const logUserActivity = async (activityEntry: ActivityEntry, userId: string) => {
   try {
     const response = await fetch('/api/activity/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId: user?._id, // Get from your auth system
-        activityEntry
+        userId: userId,
+        activityEntry: activityEntry
       })
     });
-    const result = await response.json();
-    console.log('Activity logged:', result);
+    // const result = await response.json();
+    console.log('Activity logged:');
   } catch (error) {
     console.error('Error logging activity:', error);
   }
 };
 
 
-  const logActivity = useCallback((label: string, excelFileDataUri?: string) => {
+  const logActivity = async (label: string, excelFileDataUri?: string) => {
     const newEntry: ActivityEntry = {
       id: nanoid(),
       label,
       timestamp: Date.now(),
-      excelFileDataUri,
+      excelFileDataUri: "string",
     };
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    logUserActivity(newEntry);
-    setActivityLog(prevLog => {
-      const todayGroupIndex = prevLog.findIndex(group => group.date === today);
-      if (todayGroupIndex > -1) {
-        const updatedLog = [...prevLog];
-        const updatedEntries = [newEntry, ...updatedLog[todayGroupIndex].entries];
-        updatedLog[todayGroupIndex] = { ...updatedLog[todayGroupIndex], entries: updatedEntries };
-        return updatedLog;
-      } else {
-        const newGroup: ActivityDateGroup = { date: today, entries: [newEntry] };
-        return [newGroup, ...prevLog];
-      }
-    });
-  }, []);
+    const userId = user?.userId || user?._id;
+    await logUserActivity(newEntry, userId);
+    // setActivityLog(prevLog => {
+    //   const todayGroupIndex = prevLog.findIndex(group => group.date === today);
+    //   if (todayGroupIndex > -1) {
+    //     const updatedLog = [...prevLog];
+    //     const updatedEntries = [newEntry, ...updatedLog[todayGroupIndex].entries];
+    //     updatedLog[todayGroupIndex] = { ...updatedLog[todayGroupIndex], entries: updatedEntries };
+    //     return updatedLog;
+    //   } else {
+    //     const newGroup: ActivityDateGroup = { date: today, entries: [newEntry] };
+    //     return [newGroup, ...prevLog];
+    //   }
+    // });
+  };
 
   const handleRenameActivityEntry = useCallback((entryId: string, newLabel: string) => {
     setActivityLog(prevLog => {
