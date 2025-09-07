@@ -311,7 +311,7 @@ function PageContent() {
     userId: string
   ) => {
     try {
-      const response = await fetch("/api/activity/create", {
+      const response = await fetch("/api/activity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -319,8 +319,9 @@ function PageContent() {
           activityEntry: activityEntry,
         }),
       });
-      // const result = await response.json();
-      console.log("Activity logged:");
+      window.dispatchEvent(
+      new CustomEvent("activityLogUpdated")
+    );
     } catch (error) {
       console.error("Error logging activity:", error);
     }
@@ -331,7 +332,7 @@ function PageContent() {
       id: nanoid(),
       label,
       timestamp: Date.now(),
-      excelFileDataUri: "string",
+      excelFileDataUri: excelFileDataUri,
     };
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
     const userId = user?.userId || user?._id;
@@ -699,7 +700,7 @@ function PageContent() {
         }
       }
 
-      logActivity("View List", excelDataUriForLog);
+      logActivity(`${newlyExtractedCountThisBatch} invoices extracted`, excelDataUriForLog);
     }
     // Merge with existing database invoices
     const existingDbInvoices = invoices.filter((inv) =>
