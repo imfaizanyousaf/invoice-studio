@@ -68,3 +68,32 @@ export async function GET(request) {
     );
   }
 }
+
+export async function DELETE(request) {
+  try {
+    await connectDB();
+
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "userId is required" },
+        { status: 400 }
+      );
+    }
+
+    const result = await Activity.deleteMany({ userId });
+
+    return NextResponse.json(
+      { message: "All activities deleted", deletedCount: result.deletedCount },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting activities:", error);
+    return NextResponse.json(
+      { error: "Failed to delete activities" },
+      { status: 500 }
+    );
+  }
+}

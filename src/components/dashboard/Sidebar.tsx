@@ -128,17 +128,17 @@ const Sidebar = () => {
   return (
     <aside
       className={`fixed left-0 top-0 h-screen bg-card border-r border-border z-50 transition-all duration-300 ${
-        isOpen ? "w-64" : "w-16"
+        isOpen ? "w-[14vw]" : "w-[3vw]"
       }`}
     >
       <div className="flex flex-col h-full">
         {/* Collapse Button */}
-        <div className="w-full p-4 hidden md:flex justify-end items-center">
+        <div className={`w-full hidden md:flex items-center ${isOpen ? "justify-end p-4" : "justify-center py-2"}`}>
           <Button
             variant="ghost"
             onClick={toggleSidebar}
             aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
-            className="rounded-full"
+            className="rounded-full !w-8 !h-8"
             size="icon"
           >
             <SidebarIcon />

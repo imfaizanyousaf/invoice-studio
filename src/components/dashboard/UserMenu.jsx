@@ -17,6 +17,7 @@ import {
     ChevronDoubleRightIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 
 export const UserMenu = () => {
@@ -51,12 +52,12 @@ export const UserMenu = () => {
                     </div>
                 </DropdownMenuLabel>
                 {menuItems && menuItems.map((item) => (
+                    <Link key={item.name} href={item.href}>
                     <DropdownMenuItem key={item.name} className="cursor-pointer">
-                        <a href={item.href} className="flex items-center">
-                            <item.icon className="mr-2 h-4 w-4" />
-                            <span>{item.name}</span>
-                        </a>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.name}</span>
                     </DropdownMenuItem>
+                    </Link>
                 ))
                 }
 
