@@ -222,9 +222,9 @@ function EditUserDialog({ user, onSave }: { user: BackendUser; onSave: (u: Backe
               <SelectContent>
                 <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="user">User</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
+                {/* <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="staff">Staff</SelectItem>
-                <SelectItem value="viewer">Viewer</SelectItem>
+                <SelectItem value="viewer">Viewer</SelectItem> */}
               </SelectContent>
             </Select>
           </div>
@@ -234,8 +234,8 @@ function EditUserDialog({ user, onSave }: { user: BackendUser; onSave: (u: Backe
               <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="invited">Invited</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="deactivated">Deactivated</SelectItem>
               </SelectContent>
             </Select>
           </div>
