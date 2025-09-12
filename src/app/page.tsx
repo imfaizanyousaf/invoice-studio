@@ -376,11 +376,11 @@ function PageContent() {
 
     if (!await requestLimiter.canProcessRequest(user)) {
       if (!user) {
-        // toast({
-        //   title: "Request Limit Reached",
-        //   description: `You've used your ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_REGISTERED} more requests.`,
-        //   variant: "destructive",
-        // });
+        toast({
+          title: "Request Limit Reached",
+          description: `You've used your ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_REGISTERED} more requests.`,
+          variant: "destructive",
+        });
         setRequestError(`You've used your ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_GUEST} free requests. Please register to get ${process.env.NEXT_PUBLIC_MAX_REQUESTS_FOR_REGISTERED} more requests.`);
         router.push("/signin");
         return;
@@ -756,7 +756,10 @@ function PageContent() {
         onRenameEntry={handleRenameActivityEntry}
         onOpenSettings={() => setIsSettingsPanelOpen(true)}
       />
-      <SettingsPanel isOpen={isSettingsPanelOpen} onOpenChange={setIsSettingsPanelOpen} />
+      <SettingsPanel
+        isOpen={isSettingsPanelOpen}
+        onOpenChange={setIsSettingsPanelOpen}
+      />
       <SidebarInset>
         <div className="container mx-auto p-4 md:p-8 min-h-screen flex flex-col relative">
           <div className="absolute top-6 right-6 z-20">
@@ -779,11 +782,15 @@ function PageContent() {
                 onFilesAccepted={handleFilesAccepted}
                 isProcessing={isProcessing}
                 processingProgress={processingProgress}
-                uploadedFiles={invoices.filter(inv =>
-                  inv.status === 'pending' ||
-                  inv.status === 'processing' ||
-                  (inv.status === 'error' && !inv.extractedData) ||
-                  (inv.status === 'completed' && !inv.extractedData && inv.errorMessage)
+                uploadLimit={1}
+                uploadedFiles={invoices.filter(
+                  (inv) =>
+                    inv.status === "pending" ||
+                    inv.status === "processing" ||
+                    (inv.status === "error" && !inv.extractedData) ||
+                    (inv.status === "completed" &&
+                      !inv.extractedData &&
+                      inv.errorMessage)
                 )}
                 invoiceType={invoiceType}
                 onInvoiceTypeChange={setInvoiceType}
@@ -795,11 +802,15 @@ function PageContent() {
                 onClick={handleProcessInvoices}
                 size="default"
                 className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-150 ease-in-out px-7 py-4 text-base group"
-                aria-label={pendingInvoicesCount > 0 ? `Process ${pendingInvoicesCount} uploaded invoices` : "Process Invoices"}
+                aria-label={
+                  pendingInvoicesCount > 0
+                    ? `Process ${pendingInvoicesCount} uploaded invoices`
+                    : "Process Invoices"
+                }
                 disabled={!canProcess && isProcessing}
               >
                 <Play className="mr-2 h-6 w-6 group-hover:animate-pulse" />
-                Process Invoice{pendingInvoicesCount !== 1 ? 's' : ''}
+                Process Invoice{pendingInvoicesCount !== 1 ? "s" : ""}
                 {pendingInvoicesCount > 0 && ` (${pendingInvoicesCount})`}
                 <Touchpad className="ml-2 h-6 w-6 opacity-70 group-hover:opacity-100 transition-opacity duration-150 ease-in-out hidden sm:inline-block" />
               </Button>
@@ -821,7 +832,8 @@ function PageContent() {
                   className="w-full sm:w-auto bg-gradient-to-r from-accent to-orange-400 hover:from-accent/90 hover:to-orange-400/90 text-accent-foreground shadow-md hover:shadow-lg transform hover:scale-105 transition-transform"
                   aria-label="Export all completed invoices to Excel"
                 >
-                  <Download className="mr-2 h-5 w-5" /> Export to Excel ({completedInvoices.length})
+                  <Download className="mr-2 h-5 w-5" /> Export to Excel (
+                  {completedInvoices.length})
                 </Button>
                 <Button
                   variant="outline"
@@ -837,7 +849,10 @@ function PageContent() {
           </main>
 
           <footer className="text-center py-10 text-muted-foreground text-base mt-auto">
-            <p>&copy; {new Date().getFullYear()} Invoice Insights. AI-Powered Data Extraction.</p>
+            <p>
+              &copy; {new Date().getFullYear()} Invoice Insights. AI-Powered
+              Data Extraction.
+            </p>
           </footer>
         </div>
       </SidebarInset>
