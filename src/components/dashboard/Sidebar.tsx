@@ -127,7 +127,7 @@ const Sidebar = () => {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-card border-r border-border z-50 transition-all duration-300 ${
+      className={`h-screen bg-card border-r border-border z-50 transition-all duration-300 ${
         isOpen ? "w-[14vw]" : "w-[3vw]"
       }`}
     >

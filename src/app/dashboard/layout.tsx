@@ -14,14 +14,14 @@ const LayoutContent = ({ children }: { children: React.ReactNode }) => {
     <div className="flex min-h-screen">
       <Sidebar />
       <main
-        className={`flex-1 transition-all duration-300 ${
-          isOpen ? "ml-64" : "ml-16"
+        className={`flex-grow transition-all duration-300] ${
+          isOpen ? "w-[86vw]" : "w-[97vw]"
         }`}
       >
         <div className="p-6">
-          <Header/>
+          <Header />
           {children}
-          </div>
+        </div>
       </main>
     </div>
   );
