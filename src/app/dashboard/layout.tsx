@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 import { ImageCountProvider } from "@/context/RequestCountContext";
@@ -11,14 +10,14 @@ const LayoutContent = ({ children }: { children: React.ReactNode }) => {
   const { isOpen } = useSidebar();
 
   return (
-    <div className="flex min-h-screen">
+    <div 
+      className={`flex min-h-screen ${
+        isOpen ? 'sidebar-width-expanded' : 'sidebar-width-collapsed'
+      }`}
+    >
       <Sidebar />
-      <main
-        className={`flex-grow transition-all duration-300] ${
-          isOpen ? "w-[86vw]" : "w-[97vw]"
-        }`}
-      >
-        <div className="p-6">
+      <main className="main-content">
+        <div className="p-6 w-full">
           <Header />
           {children}
         </div>

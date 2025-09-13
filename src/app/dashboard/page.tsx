@@ -856,7 +856,7 @@ function PageContent() {
   const handleClearAll = () => {
     // Only clear non-database invoices (keep user's saved invoices)
     const dbInvoices = invoices.filter((inv) => inv.id.startsWith("db_"));
-    setInvoices(dbInvoices);
+    setInvoices([]);
     setProcessingProgress(0);
     setIsProcessing(false);
     toast({
@@ -975,7 +975,7 @@ function PageContent() {
                   variant="outline"
                   onClick={handleClearAll}
                   disabled={isProcessing}
-                  className="w-full sm:w-auto shadow-md hover:shadow-lg transform hover:scale-105 transition-transform border-border hover:bg-muted/50"
+                  className="w-full sm:w-auto shadow-md hover:shadow-lg transform hover:scale-105 transition-transform border-border"
                   aria-label="Clear all uploaded invoices and extracted data"
                 >
                   <RefreshCw className="mr-2 h-5 w-5" /> Clear All

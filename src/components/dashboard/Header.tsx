@@ -47,7 +47,7 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full bg-card border border-border py-4 px-6 flex items-center justify-between rounded-xl">
+    <div className="container mx-auto bg-card border border-border py-4 px-6 flex items-center justify-between rounded-xl">
       <div className="flex flex-col">
         <h1 className="text-2xl font-bold text-foreground">
           Hello {user?.name || "Guest"}

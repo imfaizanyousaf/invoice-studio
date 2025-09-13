@@ -5,6 +5,14 @@
 
 @layer base {
   :root {
+      /* Sidebar Variables - Default values */
+        --sidebar-width-expanded: 14vw;
+        --sidebar-width-collapsed: 3vw;
+        --sidebar-width: var(--sidebar-width-expanded);
+        /* Default to expanded */
+      
+        /* Sidebar transition duration */
+        --sidebar-transition: all 0.3s ease-in-out;
     --background: 220 20% 98%; /* Lighter, slightly cool white */
     --foreground: 220 25% 25%; /* Dark, desaturated blue-gray */
     
@@ -101,6 +109,45 @@
   }
 }
 
+/* Utility classes for sidebar */
+@layer utilities {
+  .sidebar-width-expanded {
+    --sidebar-width: var(--sidebar-width-expanded);
+  }
+
+  .sidebar-width-collapsed {
+    --sidebar-width: var(--sidebar-width-collapsed);
+  }
+
+  .sidebar-width-mobile {
+    --sidebar-width: 0px;
+  }
+}
+
+/* Component-specific styles */
+@layer components {
+  .sidebar-container {
+    width: var(--sidebar-width);
+    transition: var(--sidebar-transition);
+  }
+
+  .main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    transition: var(--sidebar-transition);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .sidebar-container {
+      width: 0;
+    }
+
+    .main-content {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
 @layer base {
   * {
     @apply border-border;
@@ -126,4 +173,5 @@
   input:focus-visible {
     @apply border-none outline-none ring-0 ring-offset-0 shadow-none;
   }
+}
 }

@@ -35,42 +35,40 @@ const Sidebar = () => {
   const { user, logout } = useUser();
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [editText, setEditText] = useState<string>("");
-
   const [activities, setActivities] = useState<any[]>([]);
 
   const fetchActivities = async () => {
-      try {
-        const res = await fetch(
-          `/api/activity?userId=${user?.userId || user?._id}&limit=10`
-        );
-        const data = await res.json();
+    try {
+      const res = await fetch(
+        `/api/activity?userId=${user?.userId || user?._id}&limit=10`
+      );
+      const data = await res.json();
 
-        // group into array of { date, entries }
-        const grouped = Object.values(
-          data.reduce((acc, activity) => {
-            const date = new Date(activity.timestamp)
-              .toISOString()
-              .split("T")[0];
-            if (!acc[date]) {
-              acc[date] = { date, entries: [] };
-            }
-            acc[date].entries.push({
-              ...activity,
-              id: activity._id, // so entry.id works in JSX
-            });
-            return acc;
-          }, {})
-        );
+      // group into array of { date, entries }
+      const grouped = Object.values(
+        data.reduce((acc, activity) => {
+          const date = new Date(activity.timestamp)
+            .toISOString()
+            .split("T")[0];
+          if (!acc[date]) {
+            acc[date] = { date, entries: [] };
+          }
+          acc[date].entries.push({
+            ...activity,
+            id: activity._id, // so entry.id works in JSX
+          });
+          return acc;
+        }, {})
+      );
 
-        // sort groups by date desc
-        grouped.sort((a, b) => new Date(b.date) - new Date(a.date));
+      // sort groups by date desc
+      grouped.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        setActivities(grouped);
-      } catch (err) {
-        console.error("Error fetching activities:", err);
-      }
-    };
-
+      setActivities(grouped);
+    } catch (err) {
+      console.error("Error fetching activities:", err);
+    }
+  };
 
   const renameActivity = async () => {
     try {
@@ -97,9 +95,9 @@ const Sidebar = () => {
     };
   }, [user]);
 
-
+  // Initialize sidebar state on mount based on screen size
   useEffect(() => {
-    const handleResize = () => {
+    const initializeSidebar = () => {
       if (window.innerWidth < 768) {
         setIsOpen(false);
       } else {
@@ -107,9 +105,7 @@ const Sidebar = () => {
       }
     };
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    initializeSidebar();
   }, [setIsOpen]);
 
   const handleSaveRename = () => {
@@ -126,14 +122,12 @@ const Sidebar = () => {
   };
 
   return (
-    <aside
-      className={`h-screen bg-card border-r border-border z-50 transition-all duration-300 ${
-        isOpen ? "w-[14vw]" : "w-[3vw]"
-      }`}
-    >
+    <aside className="sidebar-container fixed top-0 left-0 h-screen bg-card border-r border-border z-50">
       <div className="flex flex-col h-full">
         {/* Collapse Button */}
-        <div className={`w-full hidden md:flex items-center ${isOpen ? "justify-end p-4" : "justify-center py-2"}`}>
+        <div className={`w-full hidden md:flex items-center transition-all duration-300 ${
+          isOpen ? "justify-end p-4" : "justify-center py-2"
+        }`}>
           <Button
             variant="ghost"
             onClick={toggleSidebar}
@@ -145,8 +139,10 @@ const Sidebar = () => {
           </Button>
         </div>
 
-        {/* Activities */}
-        <ScrollArea className={` px-2 ${isOpen ? "flex-1" : "hidden"   }`}>
+        {/* Activities - Only show when expanded */}
+        <ScrollArea className={`px-2 transition-all duration-300 ${
+          isOpen ? "flex-1 opacity-100" : "hidden opacity-0"
+        }`}>
           {activities?.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
               No activity yet. Process invoices to log activity.
@@ -162,11 +158,11 @@ const Sidebar = () => {
                   {group.entries.map((entry) => (
                     <div
                       key={entry.id}
-                      className="flex items-center justify-between group px-2 py-1 hover:bg-muted rounded-md w-fit"
+                      className="flex items-center justify-between group px-2 py-1 hover:bg-muted rounded-md"
                     >
                       {editingEntryId === entry.id ? (
                         <div className="flex-grow flex items-center gap-1.5">
-                          <ListTree className="!h-4 !w-4 text-muted-foreground" />
+                          <ListTree className="!h-4 !w-4 text-muted-foreground shrink-0" />
                           <Input
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
@@ -174,26 +170,26 @@ const Sidebar = () => {
                               if (e.key === "Enter") handleSaveRename();
                               if (e.key === "Escape") handleCancelEdit();
                             }}
-                            className="h-7 text-sm flex-grow"
+                            className="h-7 text-sm flex-grow min-w-0"
                             autoFocus
                           />
                         </div>
                       ) : (
-                        <button className="flex-grow flex items-center text-sm text-left">
-                          <ListTree className="!h-4 !w-4 mr-2 text-muted-foreground" />
-                          <span className="w-32 truncate">
-                            {entry.label} (
-                            {format(new Date(entry.timestamp), "p")})
+                        <button className="flex-grow flex items-center text-sm text-left min-w-0">
+                          <ListTree className="!h-4 !w-4 mr-2 text-muted-foreground shrink-0" />
+                          <span className="truncate flex-1 min-w-0">
+                            {entry.label} ({format(new Date(entry.timestamp), "p")})
                           </span>
                         </button>
                       )}
-                      <div className="flex items-center ml-2 space-x-1">
+                      
+                      <div className="flex items-center ml-2 space-x-1 shrink-0">
                         {editingEntryId === entry.id ? (
                           <>
                             <Button
                               size="icon"
                               variant="ghost"
-                              onClick={() => handleSaveRename(entry.id)}
+                              onClick={handleSaveRename}
                               className="h-6 w-6 p-1 text-green-600"
                             >
                               <Check className="h-4 w-4" />
